@@ -1,32 +1,93 @@
-# detekt custom rule template
+# Safe Internet Access Checker
 
-This repository is a template. You can use it to generate your own repository to write and share your custom rules.
+SafeInternetAccessChecker is a **Detekt rule** designed to enforce safe internet access in Kotlin applications. It is implemented based on the notion of an **effect system**, a system used to track the side effects of functions. It ensures that risky internet connection function calls do not exist inside targeted functions.
 
-## How to use it
+## Effect System Rules:
+The checker operates using an effect system consisting of two effects:
 
-1. Create a new repository using this one as a template. [Click here][create_template]
-2. Edit MyRule to fit your use case
-3. Share your rule! You can upload your rule to [Maven Central][maven_central] if you want. If you don't want to do all
-   the steps that Maven Central requires you can just share your rule using [jitpack][jitpack].
-4. Extra: you can remove all this README and explain what your rule does and how to configure it.
+1. **`@Safe` (Default Effect)**
+   - All functions are assumed **safe** unless explicitly annotated otherwise.
+   - No internet connection or only safe calls are present.
 
-## Documentation
+2. **`@HasRiskyInternetConnection` (Explicit Effect)**
+   - Contain function calls that initiate internet connections without exception handling.
+   - Must be explicitly marked by the developer.
 
-You can find the documentation about how to write [custom rules here][custom_rule_documentation].
+---
 
-## Note
+## How It Works
 
-- Remember that, by default, all rules are disabled. To configure your rules edit the file in
-`src/main/resources/config/config.yml`.
-- Once you have your rules ready you can publish them on the [detekt's marketplace][detekt_marketplace] to improve the discoverability. To do so create a PR editing [this file][detekt_marketplace_edit].
+### 1. Targeted Functions
+By default, the rule checks:
+- `main()`
+- `onCreate()`
 
-[create_template]: https://github.com/detekt/detekt-custom-rule-template/generate
+If any of these functions contain a risky internet connection, the rule will raise a **detekt warning**.
 
-[maven_central]: https://search.maven.org/
+#### Marking Additional Functions
+To add more functions to the check, use `@InternetAccessSafetyCheck`:
+```kotlin
+// The list of targeted functions will include the below function.
+@InternetAccessSafetyCheck
+fun myFunction() {
+    fetchDataFromAPI() 
+}
+```
 
-[custom_rule_documentation]: https://detekt.github.io/detekt/extensions.html
+---
 
-[jitpack]: https://jitpack.io/
+## Example Usage
 
-[detekt_marketplace]: https://detekt.dev/marketplace
-[detekt_marketplace_edit]: https://github.com/detekt/detekt/blob/main/website/src/data/marketplace.js
+### 1. Risky Internet Connection Without Try-Catch (Violation)
+```kotlin
+fun fetchDataFromAPI() {
+    val url = URL("https://example.com")
+    val connection = url.openConnection() // Risky: No try-catch
+    connection.connect()
+}
+```
+🚨 This function should be annotated with `@HasRiskyInternetConnection` as below:
+```kotlin
+@HasRiskyInternetConnection
+fun fetchDataFromAPI() {
+    val url = URL("https://example.com")
+    val connection = url.openConnection()
+    connection.connect()
+}
+```
+
+### 2. Safe Internet Connection (Allowed)
+```kotlin
+fun fetchDataSafely() {
+    try {
+        val url = URL("https://example.com")
+        val connection = url.openConnection()
+        connection.connect()
+    } catch (e: IOException) {
+        println("Connection failed: ${e.message}")
+    }
+}
+```
+✅ This function does not require `@HasRiskyInternetConnection` since it handles exceptions properly.
+
+### 3. Checking a Function
+```kotlin
+@InternetSafeCheck
+fun processData() {
+    fetchDataFromAPI() // 🚨 Detekt will flag this as unsafe
+}
+```
+Since `fetchDataFromAPI()` is marked `@HasRiskyInternetConnection`, `processData()` will trigger a warning.
+
+---
+
+## Summary
+✅ **Ensures safer internet connections in critical functions.**  
+✅ **Uses a lightweight annotation-based effect system.**  
+✅ **Raises warnings when unsafe internet calls are detected.**
+
+---
+
+## Future Work
+
+To reduce the burden of manually annotating functions, we plan to develop an effect inference algorithm. This algorithm will automatically infer the appropriate effect annotations for some functions. 

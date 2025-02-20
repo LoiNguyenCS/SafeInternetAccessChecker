@@ -1,8 +1,10 @@
 # Safe Internet Access Checker
 
-SafeInternetAccessChecker is a **Detekt rule** designed to enforce safe internet access in Kotlin applications. It is implemented based on the notion of an **effect system**, a system used to track the side effects of functions. It ensures that risky internet connection function calls do not exist inside targeted functions.
+SafeInternetAccessChecker is a **Detekt rule** designed to enforce safe internet access in Kotlin applications. It is implemented based on the notion of an **effect system**, a static system used to track the side effects of functions. It ensures that risky internet connection function calls do not exist inside targeted functions.
 
-## Effect System Rules:
+---
+
+## Checking Rules:
 The checker operates using an effect system consisting of two effects:
 
 1. **`@Safe` (Default Effect)**
@@ -13,81 +15,62 @@ The checker operates using an effect system consisting of two effects:
    - Contain function calls that initiate internet connections without exception handling.
    - Must be explicitly marked by the developer.
 
----
+The core rule of this checker is: 
 
-## How It Works
+> Inside **targeted functions**, there should be no function calls to `@HasRiskyInternetConnection` functions **without a try-catch block**.
 
-### 1. Targeted Functions
-By default, the rule checks:
-- `main()`
-- `onCreate()`
+This ensures that risky internet operations are either explicitly handled or safely encapsulated, reducing the likelihood of unhandled network errors.
 
-If any of these functions contain a risky internet connection, the rule will raise a **detekt warning**.
+Note: targeted function are `main()` and `onCreate()` by default. To add more targeted functions, use `@InternetSafeCheck` annotation.
 
-#### Marking Additional Functions
-To add more functions to the check, use `@InternetAccessSafetyCheck`:
-```kotlin
-// The list of targeted functions will include the below function.
-@InternetAccessSafetyCheck
-fun myFunction() {
-    fetchDataFromAPI() 
-}
-```
 
 ---
 
 ## Example Usage
 
-### 1. Risky Internet Connection Without Try-Catch (Violation)
 ```kotlin
-fun fetchDataFromAPI() {
-    val url = URL("https://example.com")
-    val connection = url.openConnection() // Risky: No try-catch
-    connection.connect()
-}
-```
-🚨 This function should be annotated with `@HasRiskyInternetConnection` as below:
-```kotlin
+import java.io.IOException
+import java.net.URL
+import java.net.URLConnection
+
+// Risky function without try-catch - should be marked with @HasRiskyInternetConnection
 @HasRiskyInternetConnection
 fun fetchDataFromAPI() {
     val url = URL("https://example.com")
-    val connection = url.openConnection()
+    val connection: URLConnection = url.openConnection() // no warnings triggered here, since fetchDataFromAPI() is not a targeted function for network access safety check.
     connection.connect()
 }
-```
 
-### 2. Safe Internet Connection (Allowed)
-```kotlin
+// Safe function with proper try-catch handling
 fun fetchDataSafely() {
     try {
         val url = URL("https://example.com")
-        val connection = url.openConnection()
+        val connection: URLConnection = url.openConnection()
         connection.connect()
     } catch (e: IOException) {
         println("Connection failed: ${e.message}")
     }
 }
-```
-✅ This function does not require `@HasRiskyInternetConnection` since it handles exceptions properly.
 
-### 3. Checking a Function
-```kotlin
+// Default targeted functions, main() and onCreate(), will be checked for network access safety. 
+fun main() {
+    fetchDataFromAPI() // 🚨 The checker will flag this as unsafe and raise a warning.
+}
+
+// Added targeted function that will also be checked
 @InternetSafeCheck
-fun processData() {
-    fetchDataFromAPI() // 🚨 Detekt will flag this as unsafe
+fun processDataSafely() {
+    fetchDataSafely() // ✅ This is safe and does not trigger a warning
 }
 ```
-Since `fetchDataFromAPI()` is marked `@HasRiskyInternetConnection`, `processData()` will trigger a warning.
 
 ---
 
 ## Summary
 ✅ **Ensures safer internet connections in critical functions.**  
 ✅ **Uses a lightweight annotation-based effect system.**  
-✅ **Raises warnings when unsafe internet calls are detected.**
 
 ---
 
 ## Future Work
-
-To reduce the burden of manually annotating functions, we plan to develop an effect inference algorithm. This algorithm will automatically infer the appropriate effect annotations for some functions. 
+To reduce the burden of manually annotating functions, we plan to develop an **effect inference algorithm**. This algorithm will automatically infer the appropriate effect annotations for some functions, reducing developer effort.

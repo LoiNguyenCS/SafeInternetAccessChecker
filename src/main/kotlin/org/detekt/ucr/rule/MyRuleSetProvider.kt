@@ -11,7 +11,7 @@ class MyRuleSetProvider : RuleSetProvider {
         return RuleSet(
             ruleSetId,
             listOf(
-                MyRule(config),
+                ConnectToInternetEffectRule(config),
             ),
         )
     }

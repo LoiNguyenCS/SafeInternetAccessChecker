@@ -1,4 +1,4 @@
-package com.github.loinguyencs.safeinternetaccesschecker
+package com.github.loinguyencs.safeinternetaccesschecker.rule
 
 import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
@@ -42,8 +42,11 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 fun KtCallExpression.hasConnectToInternetEffect(bindingContext: BindingContext): Boolean {
     val resolvedCall = this.getResolvedCall(bindingContext) ?: return false
     val originalFunction = resolvedCall.resultingDescriptor.original as? SimpleFunctionDescriptorImpl ?: return false
+    originalFunction.annotations.forEach {
+        annotation -> println(annotation.fqName)
+    }
     return originalFunction.annotations.any { annotation ->
-        annotation.fqName?.asString() in listOf("HasRiskyInternetConnection", "effects.HasRiskyInternetConnection")
+        annotation.fqName?.asString() in listOf("HasRiskyInternetConnection", "com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection")
     }
 }
 

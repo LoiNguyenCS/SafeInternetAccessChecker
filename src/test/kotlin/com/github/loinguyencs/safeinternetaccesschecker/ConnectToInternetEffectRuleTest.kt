@@ -1,4 +1,4 @@
-import com.github.loinguyencs.safeinternetaccesschecker.ConnectToInternetEffectRule
+import com.github.loinguyencs.safeinternetaccesschecker.rule.ConnectToInternetEffectRule
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
 import io.gitlab.arturbosch.detekt.test.compileAndLintWithContext
@@ -12,7 +12,7 @@ internal class InternetConnectEffectRuleTest(private val env: KotlinCoreEnvironm
     @Test
     fun `should not detect internet call inside try-catch block`() {
         val safeCode = """
-            import effects.HasRiskyInternetConnection
+            import com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection
             class NetworkClient {
                 @HasRiskyInternetConnection
                 fun fetchData() {
@@ -35,7 +35,7 @@ internal class InternetConnectEffectRuleTest(private val env: KotlinCoreEnvironm
     @Test
     fun `should detect internet call outside try-catch block`() {
         val code = """
-        import effects.HasRiskyInternetConnection
+        import com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection
             class NetworkClient {
                 @HasRiskyInternetConnection
                 fun fetchData() {
@@ -48,6 +48,6 @@ internal class InternetConnectEffectRuleTest(private val env: KotlinCoreEnvironm
             }
         """
         val findings = ConnectToInternetEffectRule(Config.empty).compileAndLintWithContext(env, code)
-        findings shouldHaveSize 0
+        findings shouldHaveSize 1
     }
 }

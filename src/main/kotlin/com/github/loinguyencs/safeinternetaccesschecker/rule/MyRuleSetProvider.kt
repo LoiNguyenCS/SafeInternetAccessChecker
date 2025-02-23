@@ -1,4 +1,4 @@
-package com.github.loinguyencs.safeinternetaccesschecker
+package com.github.loinguyencs.safeinternetaccesschecker.rule
 
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.RuleSet

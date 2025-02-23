@@ -1,4 +1,4 @@
-package org.detekt.ucr.effect
+package com.github.loinguyencs.safeinternetaccesschecker.effect
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

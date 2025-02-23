@@ -10,8 +10,11 @@ import io.gitlab.arturbosch.detekt.api.Issue
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.Severity
 import io.gitlab.arturbosch.detekt.rules.hasAnnotation
+import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
+import org.jetbrains.kotlin.utils.IDEAPluginsCompatibilityAPI
 
 /**
  * A rule that ensures no risky Internet connection calls are made
@@ -61,6 +64,7 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         super.visitNamedFunction(function)
     }
 
+    @OptIn(IDEAPluginsCompatibilityAPI::class)
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
@@ -78,5 +82,25 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
                 )
             )
         }
+        report(
+            CodeSmell(
+                issue,
+                Entity.from(expression),
+                "functions  ${expression.text} inside target functions"
+            )
+        )
+        val resolvedCall = expression.getResolvedCall(bindingContext)
+        val originalFunction = resolvedCall?.resultingDescriptor?.original as? SimpleFunctionDescriptorImpl
+        originalFunction?.annotations?.forEach {
+            report(
+                CodeSmell(
+                    issue,
+                    Entity.from(expression),
+                    "functions  ${expression.text} has annotation ${it.fqName}"
+                )
+            )
+        }
+
+
     }
 }

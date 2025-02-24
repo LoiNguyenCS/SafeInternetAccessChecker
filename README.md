@@ -23,7 +23,6 @@ This ensures that risky internet operations are either explicitly handled or saf
 
 Note: targeted function are `main()` and `onCreate()` by default. To add more targeted functions, use `@InternetSafeCheck` annotation.
 
-
 ---
 
 ## Example Usage
@@ -66,6 +65,53 @@ fun processDataSafely() {
 
 ---
 
+## Usage Instructions
+
+### Step 1: Add Dependencies
+To begin with, [add Detekt](https://detekt.dev/docs/intro) to your project.
+
+To use this checker, add the following to your `settings.gradle.kts` file:
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+Then, add the dependency to your `build.gradle.kts`:
+
+```kotlin
+dependencies {
+   detektPlugins("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.2") 
+   compileOnly("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.2")
+}
+```
+
+### Step 2: Configure Detekt
+Add the following to your `detekt.yml` configuration file in order for Detekt to apply the checker:
+
+```yaml
+SafeInternetAccessRule:
+  ConnectToInternetEffectRule:
+    active: true
+```
+
+### Step 3: Annotate Your Functions
+Mark functions that initiate internet connections without proper error handling with `@HasRiskyInternetConnection`. Keep in mind that Detekt is a static analysis tool and cannot handle dependency injection, so annotate functions broadly, particularly the root-level ones. If you want to enforce checks on specific functions, annotate them with `@InternetSafeCheck`.
+
+### Step 4: Run Detekt
+Execute the following command to analyze your project and see the report:
+
+```sh
+./gradlew detektMain
+```
+
+---
+
 ## Summary
 ✅ **Ensures safer internet connections in critical functions.**  
 ✅ **Uses a lightweight annotation-based effect system.**  
@@ -74,3 +120,4 @@ fun processDataSafely() {
 
 ## Future Work
 To reduce the burden of manually annotating functions, we plan to develop an **effect inference algorithm**. This algorithm will automatically infer the appropriate effect annotations for some functions, reducing developer effort.
+

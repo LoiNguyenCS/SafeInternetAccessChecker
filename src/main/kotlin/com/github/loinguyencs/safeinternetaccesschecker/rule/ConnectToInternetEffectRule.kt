@@ -113,11 +113,12 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         }
         val originalFunction = resolvedCall?.resultingDescriptor?.original
         if (originalFunction != null) {
+            val report = originalFunction.annotations.map { it.fqName }.joinToString("\n")
             report(
                 CodeSmell(
                     issue,
                     Entity.from(expression),
-                    "functions  ${originalFunction.name} has annotation ${originalFunction.annotations}"
+                    "functions  ${originalFunction.name} has annotation $report"
                 )
             )
         }

@@ -12,13 +12,13 @@ object MatchingAnnotationsVisitor : DetektVisitor() {
     /** List of annotation names (without @) to match against function annotations. */
     private var listOfAnnotations: List<String> = emptyList()
 
-    /** Internally mutable list to store the fully qualified names of matching functions. */
-    private var _foundFunctionNames = mutableListOf<String>()
+    /** Internally mutable set to store the fully qualified names of matching functions. */
+    private var _foundFunctionNames = mutableSetOf<String>()
 
     /**
-     * Publicly accessible immutable list of function FQNs that contain the specified annotations.
+     * Publicly accessible immutable set of function FQNs that contain the specified annotations.
      */
-    val foundFunctionNames: List<String> get() = _foundFunctionNames
+    val foundFunctionNames: Set<String> get() = _foundFunctionNames
 
     /**
      * Sets the list of annotation names to check for before running the visitor.
@@ -45,15 +45,8 @@ object MatchingAnnotationsVisitor : DetektVisitor() {
             annotation.shortName?.asString() in listOfAnnotations
         }
 
-        if (fqName.contains("getBookData")) {
-            println(function.text)
-            println(function.annotationEntries.map {  it.shortName?.asString() })
-        }
         if (hasMatchingAnnotation) {
             _foundFunctionNames.add(fqName)
-            if (fqName.contains("getBookData")) {
-                println("There is a match: $fqName")
-            }
         }
     }
 }

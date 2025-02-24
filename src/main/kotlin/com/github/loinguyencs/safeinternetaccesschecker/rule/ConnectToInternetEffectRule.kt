@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
 import org.jetbrains.kotlin.utils.IDEAPluginsCompatibilityAPI
 
 /**
@@ -84,7 +85,13 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
                 )
             )
         }
-
+        report(
+            CodeSmell(
+                issue,
+                Entity.from(expression),
+                "!Screw you!\n"
+            )
+        )
         val resolvedCall = expression.getResolvedCall(bindingContext)
         if (resolvedCall == null) {
             report(
@@ -92,6 +99,15 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
                     issue,
                     Entity.from(expression),
                     "can not resolve functions. Screw you!"
+                )
+            )
+        }
+        else {
+            report(
+                CodeSmell(
+                    issue,
+                    Entity.from(expression),
+                    "Resolved funcion is ${resolvedCall.resultingDescriptor.fqNameOrNull()}"
                 )
             )
         }

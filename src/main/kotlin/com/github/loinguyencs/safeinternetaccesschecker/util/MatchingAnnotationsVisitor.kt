@@ -51,6 +51,9 @@ object MatchingAnnotationsVisitor : DetektVisitor() {
         }
         if (hasMatchingAnnotation) {
             _foundFunctionNames.add(fqName)
+            if (fqName.contains("getBookData")) {
+                println("There is a match: $fqName")
+            }
         }
     }
 }

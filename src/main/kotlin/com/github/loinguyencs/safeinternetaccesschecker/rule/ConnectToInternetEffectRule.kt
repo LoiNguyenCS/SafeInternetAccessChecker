@@ -52,6 +52,7 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         MatchingAnnotationsVisitor.setAnnotations(effectsOfRiskyInternetConnection)
         root.accept(MatchingAnnotationsVisitor)
         listOfRiskyInternetConnectionFunction = MatchingAnnotationsVisitor.foundFunctionNames
+        println("Here is our list $listOfRiskyInternetConnectionFunction")
     }
 
     /**

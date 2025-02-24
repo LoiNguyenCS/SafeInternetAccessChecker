@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.utils.IDEAPluginsCompatibilityAPI
  * If a risky Internet connection is found inside a targeted function without a
  * `try-catch` block, a code smell is reported.
  */
+@RequiresTypeResolution
 class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 
     // List of effects that imply risky Internet connection. For now, we only have "@HasRiskyInternetConnection"

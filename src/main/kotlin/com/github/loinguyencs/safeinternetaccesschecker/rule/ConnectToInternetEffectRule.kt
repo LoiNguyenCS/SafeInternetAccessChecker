@@ -86,6 +86,15 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         }
 
         val resolvedCall = expression.getResolvedCall(bindingContext)
+        if (resolvedCall == null) {
+            report(
+                CodeSmell(
+                    issue,
+                    Entity.from(expression),
+                    "can not resolve functions. Screw you!"
+                )
+            )
+        }
         val originalFunction = resolvedCall?.resultingDescriptor?.original
         if (originalFunction != null) {
             report(

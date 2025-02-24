@@ -14,6 +14,7 @@ import io.gitlab.arturbosch.detekt.rules.hasAnnotation
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
 
 /**
  * A rule that ensures no risky Internet connection calls are made
@@ -82,6 +83,8 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         }
 
         val functionFqName = expression.getFQNames(bindingContext)
+
+        println("We get $functionFqName")
 
         if (listOfRiskyInternetConnectionFunction.contains(functionFqName)
             && !expression.insideTryExpression()) {

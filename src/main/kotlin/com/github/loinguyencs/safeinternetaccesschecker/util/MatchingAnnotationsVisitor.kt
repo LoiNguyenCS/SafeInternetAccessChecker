@@ -39,11 +39,17 @@ object MatchingAnnotationsVisitor : DetektVisitor() {
     override fun visitNamedFunction(function: KtNamedFunction) {
         super.visitNamedFunction(function)
 
+        val fqName = function.fqName?.asString() ?: function.name ?: "<anonymous>"
+
         val hasMatchingAnnotation = function.annotationEntries.any { annotation ->
             annotation.shortName?.asString() in listOfAnnotations
         }
+
+        if (fqName.contains("getBookData")) {
+            println(function.text)
+            println(function.annotationEntries.map {  it.shortName?.asString() })
+        }
         if (hasMatchingAnnotation) {
-            val fqName = function.fqName?.asString() ?: function.name ?: "<anonymous>"
             _foundFunctionNames.add(fqName)
         }
     }

@@ -85,7 +85,6 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 
         val functionFqName = expression.getFQNames(bindingContext)
 
-        println("We get $functionFqName")
         if (listOfRiskyInternetConnectionFunction.contains(functionFqName)
             && !expression.insideTryExpression()) {
             report(

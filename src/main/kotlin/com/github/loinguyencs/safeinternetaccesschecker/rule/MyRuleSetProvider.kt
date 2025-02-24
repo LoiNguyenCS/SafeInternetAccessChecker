@@ -5,7 +5,7 @@ import io.gitlab.arturbosch.detekt.api.RuleSet
 import io.gitlab.arturbosch.detekt.api.RuleSetProvider
 
 class MyRuleSetProvider : RuleSetProvider {
-    override val ruleSetId: String = "MyRuleSet"
+    override val ruleSetId: String = "SafeInternetAccessRule"
 
     override fun instance(config: Config): RuleSet {
         return RuleSet(

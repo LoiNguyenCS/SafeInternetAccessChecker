@@ -1,3 +1,3 @@
-MyRuleSet:
+SafeInternetAccessRule:
   ConnectToInternetEffectRule:
     active: true

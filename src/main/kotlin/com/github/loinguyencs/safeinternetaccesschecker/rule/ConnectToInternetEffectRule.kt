@@ -9,6 +9,7 @@ import io.gitlab.arturbosch.detekt.api.Entity
 import io.gitlab.arturbosch.detekt.api.Issue
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.Severity
+import io.gitlab.arturbosch.detekt.api.internal.RequiresTypeResolution
 import io.gitlab.arturbosch.detekt.rules.hasAnnotation
 import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.psi.KtCallExpression
@@ -82,24 +83,19 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
                 )
             )
         }
-        report(
-            CodeSmell(
-                issue,
-                Entity.from(expression),
-                "functions  ${expression.text} inside target functions"
-            )
-        )
+
         val resolvedCall = expression.getResolvedCall(bindingContext)
-        val originalFunction = resolvedCall?.resultingDescriptor?.original as? SimpleFunctionDescriptorImpl
-        originalFunction?.annotations?.forEach {
+        val originalFunction = resolvedCall?.resultingDescriptor?.original
+        if (originalFunction != null) {
             report(
                 CodeSmell(
                     issue,
                     Entity.from(expression),
-                    "functions  ${expression.text} has annotation ${it.fqName}"
+                    "functions  ${originalFunction.name} has annotation ${originalFunction.annotations}"
                 )
             )
         }
+
 
 
     }

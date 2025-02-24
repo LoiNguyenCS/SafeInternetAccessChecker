@@ -110,6 +110,9 @@ Execute the following command to analyze your project and see the report:
 ./gradlew detektMain
 ```
 
+### Example Project:
+To see an example of how an Android project can be configured and annotated to apply SafeInternetAccessChecker, consult the `internet-unsafe` branch of [this project](https://github.com/LoiNguyenCS/BookShelf/tree/internet-unsafe).
+
 ---
 
 ## Summary

@@ -87,6 +87,12 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 
         println("We get $functionFqName")
 
+        if (listOfRiskyInternetConnectionFunction.contains(functionFqName)) {
+            println("We catch the function: $functionFqName")
+        }
+        if (functionFqName.contains("getBookDate") && !expression.insideTryExpression()) {
+            println("We get getBookData not in try catch")
+        }
         if (listOfRiskyInternetConnectionFunction.contains(functionFqName)
             && !expression.insideTryExpression()) {
             report(

@@ -36,14 +36,12 @@ internal class InternetConnectEffectRuleTest(private val env: KotlinCoreEnvironm
     fun `should detect internet call outside try-catch block`() {
         val code = """
             import com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection
-            import com.github.loinguyencs.safeinternetaccesschecker.effect.InternetSafeCheck
             class NetworkClient { 
                 @HasRiskyInternetConnection
                 fun fetchData() {
                     println("Fetching data from the internet")
                 }
 
-                @InternetSafeCheck
                 fun unsafeMethod() {
                     fetchData()  // This should be flagged
                 }

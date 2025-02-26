@@ -14,21 +14,22 @@ import io.gitlab.arturbosch.detekt.rules.hasAnnotation
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
 
 /**
- * A rule that ensures no risky Internet connection calls are made
- * inside targeted functions without proper exception handling.
+ * Ensures that functions do not make risky internet connections
+ * without proper exception handling.
  *
- * A "risky Internet connection" is defined as a function call that has effect
- * `@HasRiskyInternetConnection` and is not enclosed within a `try-catch` block.
+ * A "risky internet connection" refers to a function annotated with
+ * `@HasRiskyInternetConnection`. These functions contain internet-connecting
+ * calls that are not enclosed in a `try-catch` block.
  *
- * Targeted functions are those that are annotated with `@InternetSafeCheck` or have
- * the names `main` or `onCreate`.
+ * By default, functions are considered `@Safe` unless explicitly annotated.
+ * A safe function must not contain unhandled internet connection calls.
  *
- * If a risky Internet connection is found inside a targeted function without a
- * `try-catch` block, a code smell is reported.
+ * If a risky internet connection is detected inside a `@Safe` function,
+ * a code smell is reported.
  */
+
 class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 
     // List of effects that imply risky Internet connection. For now, we only have "@HasRiskyInternetConnection"
@@ -36,7 +37,8 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         "com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection",
         "HasRiskyInternetConnection")
 
-    private var insideTargetFunction = false
+    // Functions have @Safe effect if they have no unhandled network calls.
+    private var insideSafeFunction = false
 
     private var listOfRiskyInternetConnectionFunction = listOf<String>()
 
@@ -52,7 +54,6 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         MatchingAnnotationsVisitor.setAnnotations(effectsOfRiskyInternetConnection)
         root.accept(MatchingAnnotationsVisitor)
         listOfRiskyInternetConnectionFunction = MatchingAnnotationsVisitor.foundFunctionNames.toList()
-        println("Here is our list $listOfRiskyInternetConnectionFunction")
     }
 
     /**
@@ -65,12 +66,10 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
      * @param function The function being visited.
      */
     override fun visitNamedFunction(function: KtNamedFunction) {
-        if (function.hasAnnotation("InternetSafeCheck")
-            || function.name == "main"
-            || function.name == "onCreate") {
-            insideTargetFunction = true
+        if (!function.hasAnnotation("HasRiskyInternetConnection")) {
+            insideSafeFunction = true
             super.visitNamedFunction(function)
-            insideTargetFunction = false
+            insideSafeFunction = false
             return
         }
         super.visitNamedFunction(function)
@@ -79,7 +78,7 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
-        if (!insideTargetFunction) {
+        if (!insideSafeFunction) {
             return
         }
 
@@ -91,8 +90,7 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
                 CodeSmell(
                     issue,
                     Entity.from(expression),
-                    "Internet-connecting function calls ${expression.text} should be inside a try-catch block."
-                )
+                    message = "The call ${expression.text} initiates an internet connection but is not handled properly. Wrap it in a try-catch block or annotate the enclosing function with @HasRiskyInternetConnection.")
             )
         }
     }

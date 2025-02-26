@@ -17,11 +17,9 @@ The checker operates using an effect system consisting of two effects:
 
 The core rule of this checker is: 
 
-> Inside **targeted functions**, there should be no function calls to `@HasRiskyInternetConnection` functions **without a try-catch block**.
+> Inside `@Safe` functions, there should be no calls to `@HasRiskyInternetConnection` functions **without a try-catch block**.
 
 This ensures that risky internet operations are either explicitly handled or safely encapsulated, reducing the likelihood of unhandled network errors.
-
-Note: targeted function are `main()` and `onCreate()` by default. To add more targeted functions, use `@InternetSafeCheck` annotation.
 
 ---
 
@@ -36,7 +34,7 @@ import java.net.URLConnection
 @HasRiskyInternetConnection
 fun fetchDataFromAPI() {
     val url = URL("https://example.com")
-    val connection: URLConnection = url.openConnection() // no warnings triggered here, since fetchDataFromAPI() is not a targeted function for network access safety check.
+    val connection: URLConnection = url.openConnection()
     connection.connect()
 }
 
@@ -51,13 +49,10 @@ fun fetchDataSafely() {
     }
 }
 
-// Default targeted functions, main() and onCreate(), will be checked for network access safety. 
 fun main() {
     fetchDataFromAPI() // 🚨 The checker will flag this as unsafe and raise a warning.
 }
 
-// Added targeted function that will also be checked
-@InternetSafeCheck
 fun processDataSafely() {
     fetchDataSafely() // ✅ This is safe and does not trigger a warning
 }
@@ -101,7 +96,7 @@ SafeInternetAccessRule:
 ```
 
 ### Step 3: Annotate Your Functions
-Mark functions that initiate internet connections without proper error handling with `@HasRiskyInternetConnection`. Keep in mind that Detekt is a static analysis tool and cannot handle dependency injection, so annotate functions broadly, particularly the root-level ones. If you want to enforce checks on specific functions, annotate them with `@InternetSafeCheck`.
+Mark functions that initiate internet connections without proper error handling with `@HasRiskyInternetConnection`. Keep in mind that Detekt is a static analysis tool and cannot handle dependency injection, so annotate functions broadly, particularly the root-level ones. 
 
 ### Step 4: Run Detekt
 Execute the following command to analyze your project and see the report:

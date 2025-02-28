@@ -50,4 +50,25 @@ internal class InternetConnectEffectRuleTest(private val env: KotlinCoreEnvironm
         val findings = ConnectToInternetEffectRule(Config.empty).compileAndLintWithContext(env, code)
         findings shouldHaveSize 1
     }
+
+    @Test
+    fun `should detect unsafe OkHttp internet call`() {
+        val code = """
+            import okhttp3.OkHttpClient
+            import okhttp3.Request
+
+            class NetworkClient {
+                fun makeRequest() {
+                    val client = OkHttpClient()
+                    val request = Request.Builder()
+                        .url("https://example.com")
+                        .build()
+                    client.newCall(request).execute()  // This should be flagged
+                }
+            }
+        """
+        val findings = ConnectToInternetEffectRule(Config.empty).compileAndLintWithContext(env, code)
+        findings shouldHaveSize 1
+    }
+
 }

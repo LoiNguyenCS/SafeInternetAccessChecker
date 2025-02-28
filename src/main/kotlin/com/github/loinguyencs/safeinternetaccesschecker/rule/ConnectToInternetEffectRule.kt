@@ -1,7 +1,9 @@
 package com.github.loinguyencs.safeinternetaccesschecker.rule
 
-import com.github.loinguyencs.safeinternetaccesschecker.util.MatchingAnnotationsVisitor
-import com.github.loinguyencs.safeinternetaccesschecker.util.getFQNames
+import RiskyInternetAccessRegistry.internetAccessAnnotations
+import RiskyInternetAccessRegistry.popularRiskyLibraryMethods
+import com.github.loinguyencs.safeinternetaccesschecker.util.getFqName
+import com.github.loinguyencs.safeinternetaccesschecker.util.hasMatchingAnnotation
 import com.github.loinguyencs.safeinternetaccesschecker.util.insideTryExpression
 import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
@@ -12,7 +14,6 @@ import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.Severity
 import io.gitlab.arturbosch.detekt.rules.hasAnnotation
 import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 /**
@@ -32,15 +33,12 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class ConnectToInternetEffectRule(config: Config) : Rule(config) {
 
-    // List of effects that imply risky Internet connection. For now, we only have "@HasRiskyInternetConnection"
-    private val effectsOfRiskyInternetConnection = listOf(
-        "com.github.loinguyencs.safeinternetaccesschecker.effect.HasRiskyInternetConnection",
-        "HasRiskyInternetConnection")
+
 
     // Functions have @Safe effect if they have no unhandled network calls.
     private var insideSafeFunction = false
 
-    private var listOfRiskyInternetConnectionFunction = listOf<String>()
+    private var listOfRiskyInternetConnectionFunction = popularRiskyLibraryMethods
 
     override val issue = Issue(
         javaClass.simpleName,
@@ -49,12 +47,6 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
         Debt.FIVE_MINS,
     )
 
-    override fun preVisit(root: KtFile) {
-        super.preVisit(root)
-        MatchingAnnotationsVisitor.setAnnotations(effectsOfRiskyInternetConnection)
-        root.accept(MatchingAnnotationsVisitor)
-        listOfRiskyInternetConnectionFunction = MatchingAnnotationsVisitor.foundFunctionNames.toList()
-    }
 
     /**
      * This function is called when a named function is visited. It checks if the function
@@ -82,10 +74,10 @@ class ConnectToInternetEffectRule(config: Config) : Rule(config) {
             return
         }
 
-        val functionFqName = expression.getFQNames(bindingContext)
-
-        if (listOfRiskyInternetConnectionFunction.contains(functionFqName)
-            && !expression.insideTryExpression()) {
+        val initiateInternetConnection =
+            listOfRiskyInternetConnectionFunction.contains(expression.getFqName(bindingContext))
+                    || expression.hasMatchingAnnotation(bindingContext, internetAccessAnnotations)
+        if ( initiateInternetConnection && !expression.insideTryExpression()) {
             report(
                 CodeSmell(
                     issue,

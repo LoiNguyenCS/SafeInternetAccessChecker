@@ -81,8 +81,8 @@ Then, add the dependency to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-   detektPlugins("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.2") 
-   compileOnly("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.2")
+   detektPlugins("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.4") 
+   compileOnly("com.github.LoiNguyenCS:SafeInternetAccessChecker:v1.2.4")
 }
 ```
 

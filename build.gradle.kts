@@ -12,7 +12,7 @@ dependencies {
     // All the implementations below are for testing purpose
     testImplementation("io.gitlab.arturbosch.detekt:detekt-test:1.23.7")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
